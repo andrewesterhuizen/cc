@@ -3,52 +3,151 @@
 #include <strings.h>
 
 #include "ast.h"
-#include "lexer.h"
-
+#include "string_builder.h"
 #include "defines.h"
 
-char *expression_to_string(ast_node_expression_t *e) {
-    char *s = malloc(sizeof(char) * 120);
+char *expression_to_string(ast_node_expression_t *expression) {
+    DEBUGF("expression_to_string: type = %s\n", ast_node_type_to_string(expression->type));
 
-    switch (e->type) {
+    char *out = malloc(sizeof(char) * 256);
+
+    switch (expression->type) {
         case AstNodeIntegerLiteralExpression:
-            sprintf(s, "integer_literal_expression { value: %d }", e->value_int);
+            sprintf(out, "integer_literal_expression { value: %d }", expression->value_int);
             break;
+        case AstNodeTypeIdentifierExpression:
+            sprintf(out, "identifier_expression { identifier: %s }", expression->identifier);
+            break;
+        case AstNodeFunctionCallExpression: {
+            string_builder_t *sb = string_builder_new();
+
+            string_builder_append(sb, "[");
+
+            ast_node_expression_t *args = expression->function_call_expression.arguments;
+
+            if (args != NULL) {
+                for (ast_node_expression_t *e = args; e != NULL; e = e->next) {
+                    string_builder_append(sb, expression_to_string(e));
+                    string_builder_append(sb, ", ");
+                }
+            }
+
+            string_builder_append(sb, "]");
+
+            char *args_string = string_builder_get_string_copy(sb);
+            string_builder_destroy(sb);
+
+            sprintf(out, "function_call_expression {\n  identifier: %s,\n  args: %s }",
+                    expression->function_call_expression.identifier,
+                    args_string);
+            break;
+        }
+
         default:
-        EXIT_ERRORF("expression_to_string: no case defined for expression type %d\n", e->type);
+        EXIT_ERRORF("expression_to_string: no case defined for expression type %d\n", expression->type);
     }
 
-    return s;
+    return out;
 }
 
-void print_statement(ast_node_statement_t *s) {
+char *statement_to_string(ast_node_statement_t *s) {
+    DEBUGF("statement_to_string: type = %s\n", ast_node_type_to_string(s->type));
+
+    char *out = malloc(sizeof(char) * 2056);
+
     switch (s->type) {
         case AstNodeTypeEmptyStatement:
             break;
-        case AstNodeTypeDeclarationStatement:
+        case AstNodeTypeDeclarationStatement: {
+            char *val = "NULL";
             if (s->declaration.value != NULL) {
-                printf("declaration_statement { date_type: %s, identifier: %s, value: %s }",
-                       data_type_to_string(s->declaration.data_type),
-                       s->declaration.identifier,
-                       expression_to_string(s->declaration.value));
-            } else {
-                printf("declaration_statement { date_type: %s, identifier: %s }",
-                       data_type_to_string(s->declaration.data_type),
-                       s->declaration.identifier);
+                val = expression_to_string(s->declaration.value);
             }
 
+            sprintf(out, "declaration_statement {\n  identifier: %s,\n  date_type: %s,\n  value: %s \n}",
+                    s->declaration.identifier,
+                    data_type_to_string(s->declaration.data_type),
+                    val);
             break;
+        }
+
+        case AstNodeTypeFunctionDeclarationStatement: {
+            string_builder_t *sb = string_builder_new();
+            string_builder_append(sb, "[");
+
+            function_declaration_parameter_t *current_parameter = s->function_declaration.parameters;
+            while (current_parameter != NULL) {
+                string_builder_append(sb, function_declaration_parameter_to_string(current_parameter));
+                string_builder_append(sb, ",");
+                current_parameter = current_parameter->next;
+            }
+
+            string_builder_append(sb, "]");
+
+            char *params_string = string_builder_get_string_copy(sb);
+            string_builder_destroy(sb);
+
+
+            sprintf(out,
+                    "function_declaration_statement {\n  identifier: %s,\n  parameters: %s,\n  return_type: %s,\n  value: %s \n}",
+                    s->function_declaration.identifier,
+                    params_string,
+                    data_type_to_string(s->function_declaration.return_type),
+                    statement_to_string(s->function_declaration.body));
+            break;
+        }
+
+        case AstNodeTypeBlockStatement: {
+            string_builder_t *sb = string_builder_new();
+            string_builder_append(sb, "[");
+
+            ast_node_statement_t *current_statement = s->block.statements;
+            while (current_statement != NULL) {
+                string_builder_append(sb, statement_to_string(current_statement));
+                string_builder_append(sb, ",");
+                current_statement = current_statement->next;
+            }
+
+            string_builder_append(sb, "]");
+
+            sprintf(out, "block_statement {\n  body: %s \n}", string_builder_get_string_copy(sb));
+            string_builder_destroy(sb);
+
+            break;
+        }
+
+        case AstNodeTypeExpressionStatement: {
+            sprintf(out, "expression_statement {\n  expression: %s\n}", expression_to_string(s->expression));
+            break;
+        }
+
         default:
-        EXIT_ERRORF("print_statement: no case defined for statement type %d\n", s->type);
+        EXIT_ERRORF("statement_to_string: no case defined for statement type %d\n", s->type);
     }
+
+    return out;
 }
 
-void print_ast(ast_node_t *node) {
+char *function_declaration_parameter_to_string(function_declaration_parameter_t *declaration) {
+    DEBUGF("function_declaration_parameter_to_string: name = %s\n", declaration->identifier);
+
+    char *out = malloc(sizeof(char) * 256);
+    sprintf(out, "parameter { identifier: %s, data_type: %s }", declaration->identifier,
+            data_type_to_string(declaration->data_type));
+    return out;
+}
+
+char *ast_to_string(ast_node_t *node) {
+    DEBUGF("print_ast: type = %s\n", ast_node_type_to_string(node->type));
+
+    string_builder_t *sb = string_builder_new();
+    int indent = 0;
+
     switch (node->type) {
         case AstNodeTypeProgram: {
             ast_node_statement_t *s = node->statements;
             while (s != NULL) {
-                print_statement(s);
+                string_builder_append(sb, statement_to_string(s));
                 s = s->next;
             }
             break;
@@ -56,9 +155,16 @@ void print_ast(ast_node_t *node) {
             EXIT_ERRORF("print_ast: no case defined for node type %d\n", node->type);
         }
     }
+
+    char *out = string_builder_get_string_copy(sb);
+    string_builder_destroy(sb);
+
+    return out;
 }
 
 ast_node_statement_t *new_ast_statement_node(unsigned int type) {
+    DEBUGF("new_ast_statement_node: type = %s\n", ast_node_type_to_string(type));
+
     ast_node_statement_t *s = malloc(sizeof(ast_node_statement_t));
     s->type = type;
     s->next = NULL;
@@ -66,22 +172,17 @@ ast_node_statement_t *new_ast_statement_node(unsigned int type) {
 }
 
 ast_node_expression_t *new_ast_expression_node(unsigned int type) {
-    ast_node_statement_t *s = malloc(sizeof(ast_node_expression_t));
+    DEBUGF("new_ast_expression_node: type = %s\n", ast_node_type_to_string(type));
+
+    ast_node_expression_t *s = malloc(sizeof(ast_node_expression_t));
     s->type = type;
     s->next = NULL;
     return s;
 }
 
-void expect_type(token_t *token, unsigned int type) {
-    if (token->type != type) {
-        EXIT_ERRORF("expected type %s and got %s for token with value \"%s\"\n",
-                    token_name(type),
-                    token_name(token->type),
-                    token->value);
-    }
-}
-
 unsigned int get_data_type(char *type_name) {
+    DEBUGF("get_data_type: %s\n", type_name);
+
     if (strcmp(type_name, "int") == 0) {
         return DataTypeInt;
     }
@@ -89,72 +190,61 @@ unsigned int get_data_type(char *type_name) {
     EXIT_ERRORF("get_data_type: no case defined for data type \"%s\"\n", type_name);
 }
 
-ast_node_expression_t *parse_expression(token_t *tokens, token_t *current_token) {
-    switch (current_token->type) {
-        case TokenTypeIntegerLiteral: {
-            ast_node_expression_t *e = new_ast_expression_node(AstNodeIntegerLiteralExpression);
-            e->value_int = atoi(current_token->value);
-            return e;
-        }
-        default:
-        EXIT_ERRORF("parse_expression: unexpected token: %s\n", token_to_string(current_token));
-    }
-}
+char *data_type_to_string(data_type_t type) {
+    string_builder_t *sb = string_builder_new();
 
-ast_node_t *get_ast(token_t *tokens) {
-    ast_node_t *program = malloc(sizeof(ast_node_t));
-    program->type = AstNodeTypeProgram;
-    program->statements = new_ast_statement_node(AstNodeTypeEmptyStatement);
-    ast_node_statement_t *statements_tail = program->statements;
-
-    token_t *current_token = tokens;
-    while (current_token) {
-        switch (current_token->type) {
-            case TokenTypeStart:
-            case TokenTypeEndOfFile:
-                break;
-            case TokenTypeDataType: {
-                ast_node_statement_t *s = new_ast_statement_node(AstNodeTypeDeclarationStatement);
-
-                s->declaration.data_type = get_data_type(current_token->value);
-
-                current_token = current_token->next;
-                expect_type(current_token, TokenTypeIdentifier);
-                s->declaration.identifier = strdup(current_token->value);
-
-                current_token = current_token->next;
-                if (current_token->type == TokenTypeEquals) {
-                    current_token = current_token->next;
-                    expect_type(current_token, TokenTypeIntegerLiteral);
-
-                    ast_node_expression_t *e = parse_expression(tokens, current_token);
-                    s->declaration.value = e;
-                }
-
-                current_token = current_token->next;
-                expect_type(current_token, TokenTypeSemiColon);
-
-                statements_tail->next = s;
-                statements_tail = s;
-
-                break;
-            }
-            default:
-            EXIT_ERRORF("get_ast: unexpected token: %s\n", token_to_string(current_token));
-        }
-
-        current_token = current_token->next;
-    }
-    return program;
-}
-
-char *data_type_to_string(unsigned int type) {
-    switch (type) {
+    switch (type.type) {
         case DataTypeInt:
-            return "Integer";
+            string_builder_append(sb, "Integer");
+            break;
+        default:
+            string_builder_append(sb, "Unknown");
+    }
+
+    if (type.is_pointer) {
+        string_builder_append(sb, "*");
+    }
+
+    char *out = string_builder_get_string_copy(sb);
+    string_builder_destroy(sb);
+
+    return out;
+}
+
+char *ast_node_type_to_string(unsigned int type) {
+    switch (type) {
+        case AstNodeTypeProgram:
+            return "AstNodeTypeProgram";
+        case AstNodeTypeExpression:
+            return "AstNodeTypeExpression";
+        case AstNodeTypeStatement:
+            return "AstNodeTypeStatement";
+        case AstNodeTypeEmptyStatement:
+            return "AstNodeTypeEmptyStatement";
+        case AstNodeTypeBlockStatement:
+            return "AstNodeTypeBlockStatement";
+        case AstNodeTypeExpressionStatement:
+            return "AstNodeTypeExpressionStatement";
+        case AstNodeTypeDeclarationStatement:
+            return "AstNodeTypeDeclarationStatement";
+        case AstNodeTypeFunctionDeclarationStatement:
+            return "AstNodeTypeFunctionDeclarationStatement";
+        case AstNodeIntegerLiteralExpression:
+            return "AstNodeIntegerLiteralExpression";
+        case AstNodeFunctionCallExpression:
+            return "AstNodeFunctionCallExpression";
+        case AstNodeTypeIdentifierExpression:
+            return "AstNodeTypeIdentifierExpression";
         default:
             return "Unknown";
     }
 }
 
-#include "ast.h"
+function_declaration_parameter_t *new_function_declaration_parameter(data_type_t data_type, char *identifier) {
+    function_declaration_parameter_t *p = malloc(sizeof(function_declaration_parameter_t));
+    p->identifier = identifier;
+    p->data_type.type = data_type.type;
+    p->data_type.is_pointer = data_type.is_pointer;
+    p->next = NULL;
+    return p;
+}

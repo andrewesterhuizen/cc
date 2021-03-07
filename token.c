@@ -7,6 +7,7 @@ token_t *new_token(unsigned int type, char *value) {
     token_t *token = malloc(sizeof(token_t));
     token->type = type;
     token->value = value;
+    token->prev = NULL;
     token->next = NULL;
     return token;
 }
@@ -14,6 +15,7 @@ token_t *new_token(unsigned int type, char *value) {
 token_t *token_add_next(token_t *prev, int type, char *value) {
     token_t *next = new_token(type, value);
     prev->next = next;
+    next->prev = prev;
     return next;
 }
 
@@ -43,6 +45,8 @@ char *token_name(unsigned int type) {
             return "TokenTypeIntegerLiteral";
         case TokenTypeSemiColon:
             return "TokenTypeSemiColon";
+        case TokenTypeComma:
+            return "TokenTypeComma";
         case TokenTypeEquals:
             return "TokenTypeEquals";
         case TokenTypeMinus:

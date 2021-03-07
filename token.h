@@ -10,6 +10,7 @@ enum {
     TokenTypeIntegerLiteral,
     TokenTypeStringLiteral,
     TokenTypeSemiColon,
+    TokenTypeComma,
     TokenTypeEquals,
     TokenTypePlus,
     TokenTypeMinus,
@@ -26,12 +27,13 @@ enum {
 typedef struct token {
     unsigned int type;
     char *value;
-    struct token_t *next;
+    struct token *prev;
+    struct token *next;
 } token_t;
 
 token_t *new_token(unsigned int type, char *value);
 
-token_t* token_add_next(token_t *prev, int type, char *value);
+token_t *token_add_next(token_t *prev, int type, char *value);
 
 void print_tokens(token_t *head);
 

@@ -19,5 +19,6 @@ void string_builder_append(string_builder_t *builder, char *str);
 void string_builder_append_char(string_builder_t *builder, char c);
 void string_builder_destroy(string_builder_t *builder);
 void string_builder_reset(string_builder_t *builder);
+void string_builder_resize(string_builder_t *builder, size_t capacity);
 
 #endif //STRING_BUILDER_H

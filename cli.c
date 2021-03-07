@@ -3,17 +3,35 @@
 #include "lexer.h"
 #include "token.h"
 #include "ast.h"
+#include "parser.h"
+#include "defines.h"
+
+// TODO:
+// pointers
+// function calls
 
 int main() {
-    char *program = "int x = 99;\n";
+    char *program = "int* main(int *x) { test(x, 2); };\n";
 
-
+    DEBUGF("*** lexing ***\n");
     token_t *tokens = getTokens(program);
+    DEBUGF("\n");
+
+    DEBUGF("*** tokens: ***\n");
     print_tokens(tokens);
+    DEBUGF("\n");
 
-    ast_node_t *ast = get_ast(tokens);
+    DEBUGF("*** parsing ***\n");
+    ast_node_t *ast = parser_get_ast(tokens);
+    DEBUGF("\n");
 
-    print_ast(ast);
+    DEBUGF("*** ast_to_string: ***\n");
+    char *ast_str = ast_to_string(ast);
+    DEBUGF("\n");
+
+    DEBUGF("*** ast: ***\n");
+    printf(ast_str);
+    DEBUGF("\n");
 
     return 0;
 }

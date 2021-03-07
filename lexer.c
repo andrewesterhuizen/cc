@@ -6,6 +6,7 @@
 #include "lexer.h"
 #include "token.h"
 #include "string_builder.h"
+#include "defines.h"
 
 const int len_keywords = 3;
 char *keywords[len_keywords] = {
@@ -117,6 +118,9 @@ token_t *getTokens(char *input) {
             case ';':
                 token_tail = token_add_next(token_tail, TokenTypeSemiColon, ";");
                 break;
+            case ',':
+                token_tail = token_add_next(token_tail, TokenTypeComma, ";");
+                break;
             case '=':
                 token_tail = token_add_next(token_tail, TokenTypeEquals, "=");
                 break;
@@ -155,8 +159,7 @@ token_t *getTokens(char *input) {
                 // skip
                 break;
             default:
-                fprintf(stderr, "lexing error: unknown char = \"%c\", code = (%d)\n", c, c);
-                exit(1);
+                EXIT_ERRORF("lexer: unknown char = \"%c\", code = (%d)\n", c, c)
         }
 
         index++;
