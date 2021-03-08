@@ -15,6 +15,9 @@ char *expression_to_string(ast_node_expression_t *expression) {
         case AstNodeIntegerLiteralExpression:
             sprintf(out, "integer_literal_expression { value: %d }", expression->value_int);
             break;
+        case AstNodeStringLiteralExpression:
+            sprintf(out, "string_literal_expression { value: \"%s\" }", expression->value_string);
+            break;
         case AstNodeTypeIdentifierExpression:
             sprintf(out, "identifier_expression { identifier: %s }", expression->identifier);
             break;
@@ -72,7 +75,7 @@ char *statement_to_string(ast_node_statement_t *s) {
                 val = expression_to_string(s->declaration.value);
             }
 
-            sprintf(out, "declaration_statement {\n  identifier: %s,\n  date_type: %s,\n  value: %s \n}",
+            sprintf(out, "declaration_statement {\n  identifier: %s,\n  data_type: %s,\n  value: %s \n}",
                     s->declaration.identifier,
                     data_type_to_string(s->declaration.data_type),
                     val);
@@ -195,13 +198,17 @@ ast_node_expression_t *new_ast_expression_node(unsigned int type) {
 }
 
 unsigned int get_data_type(char *type_name) {
-    DEBUGF("get_data_type: %s\n", type_name);
+    DEBUGF("parser: get_data_type: %s\n", type_name);
 
     if (strcmp(type_name, "int") == 0) {
         return DataTypeInt;
     }
 
-    EXIT_ERRORF("get_data_type: no case defined for data type \"%s\"\n", type_name);
+    if (strcmp(type_name, "char") == 0) {
+        return DataTypeChar;
+    }
+
+    EXIT_ERRORF("parser: get_data_type: no case defined for data type \"%s\"\n", type_name);
 }
 
 char *data_type_to_string(data_type_t type) {
@@ -209,10 +216,13 @@ char *data_type_to_string(data_type_t type) {
 
     switch (type.type) {
         case DataTypeInt:
-            string_builder_append(sb, "Integer");
+            string_builder_append(sb, "int");
+            break;
+        case DataTypeChar:
+            string_builder_append(sb, "char");
             break;
         default:
-            string_builder_append(sb, "Unknown");
+            string_builder_append(sb, "unknown");
     }
 
     if (type.is_pointer) {
@@ -247,6 +257,8 @@ char *ast_node_type_to_string(unsigned int type) {
             return "AstNodeTypeReturnStatement";
         case AstNodeIntegerLiteralExpression:
             return "AstNodeIntegerLiteralExpression";
+        case AstNodeStringLiteralExpression:
+            return "AstNodeStringLiteralExpression";
         case AstNodeFunctionCallExpression:
             return "AstNodeFunctionCallExpression";
         case AstNodeTypeIdentifierExpression:

@@ -9,14 +9,7 @@
 #include "hash_table.h"
 
 int main() {
-    char *program = "#define x 1\n"
-                    "y = x;\n";
-//    char *program = "#include <stdio.h>\n";
-//                    "\n"
-//                    "int main() {\n"
-//                    "   printf(\"hi\");\n"
-//                    "   return 0;\n"
-//                    "}";
+    char *program = "char* x = \"a string\";";
 
     DEBUGF("*** lexing ***\n");
     token_t *tokens = getTokens(program);

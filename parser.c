@@ -78,6 +78,11 @@ ast_node_expression_t *parser_parse_expression(parser_t *parser) {
 
             return binary_expression;
         }
+        case TokenTypeStringLiteral: {
+            ast_node_expression_t *e = new_ast_expression_node(AstNodeStringLiteralExpression);
+            e->value_string = parser->current_token->value;
+            return e;
+        }
         case TokenTypeIdentifier: {
             token_t *identifier_token = parser->current_token;
             parser_next_token(parser);

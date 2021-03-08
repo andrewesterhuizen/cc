@@ -14,13 +14,15 @@ enum {
     AstNodeTypeFunctionDeclarationStatement,
     AstNodeTypeReturnStatement,
     AstNodeIntegerLiteralExpression,
+    AstNodeStringLiteralExpression,
     AstNodeFunctionCallExpression,
     AstNodeTypeIdentifierExpression,
     AstNodeBinaryExpression
 };
 
 enum {
-    DataTypeInt = 1
+    DataTypeInt = 1,
+    DataTypeChar = 2
 };
 
 struct data_type {
@@ -44,6 +46,7 @@ struct ast_node_expression {
     union {
         struct function_call_expression function_call_expression;
         unsigned int value_int;
+        char* value_string;
         char *identifier;
         struct binary_expression binary_expression;
     };

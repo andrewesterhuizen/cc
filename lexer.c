@@ -16,9 +16,10 @@ char *keywords[len_keywords] = {
         "return"
 };
 
-const int len_data_types = 1;
+const int len_data_types = 2;
 char *data_types[len_data_types] = {
         "int",
+        "char"
 };
 
 
@@ -184,6 +185,7 @@ token_t *getTokens(char *input) {
             continue;
         }
 
+
         switch (c) {
             // preprocessor directive
             case '#':
@@ -191,6 +193,15 @@ token_t *getTokens(char *input) {
                 token_tail->next = get_preproccesor_directive(input, &index);
                 token_tail = token_tail->next;
                 break;
+
+            case '"': {
+                // string
+                index++;
+                char *value = get_chars_until(input, &index, '"');
+                token_tail = token_add_next(token_tail, TokenTypeStringLiteral, value);
+                break;
+            }
+
             case ';':
                 token_tail = token_add_next(token_tail, TokenTypeSemiColon, ";");
                 break;
