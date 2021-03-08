@@ -46,7 +46,7 @@ ast_node_expression_t *parser_parse_function_call_expression(parser_t *parser, t
     }
 
     parser_expect(parser, TokenTypeRightParen);
-
+    parser_next_token(parser);
 
     return expression;
 }
@@ -60,7 +60,9 @@ ast_node_expression_t *parser_parse_expression(parser_t *parser) {
             e->value_int = atoi(parser->current_token->value);
 
             parser_next_token(parser);
-            if (parser->current_token->type == TokenTypeSemiColon) {
+            if (parser->current_token->type == TokenTypeSemiColon ||
+                parser->current_token->type == TokenTypeRightParen ||
+                parser->current_token->type == TokenTypeComma) {
                 parser_prev_token(parser);
                 return e;
             }
@@ -253,6 +255,9 @@ ast_node_statement_t *parser_parse_statements(parser_t *parser) {
                                                                                  is_pointer);
                     current_statement->next = s;
                     current_statement = s;
+
+                    parser_next_token(parser);
+                    parser_expect(parser, TokenTypeSemiColon);
                 } else if (parser->current_token->type == TokenTypeLeftParen) {
                     // function declaration
                     ast_node_statement_t *s = parser_parse_function_declaration_statement(parser,
@@ -263,9 +268,6 @@ ast_node_statement_t *parser_parse_statements(parser_t *parser) {
                     current_statement->next = s;
                     current_statement = s;
                 }
-
-                parser_next_token(parser);
-                parser_expect(parser, TokenTypeSemiColon);
 
                 break;
             }

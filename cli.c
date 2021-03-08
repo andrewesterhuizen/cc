@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "lexer.h"
 #include "token.h"
@@ -6,10 +9,13 @@
 #include "parser.h"
 #include "defines.h"
 #include "preprocessor.h"
-#include "hash_table.h"
 
 int main() {
-    char *program = "char* x = \"a string\";";
+    int fd = open("/Users/andrewesterhuizen/dev/cc/test/hello.c", O_RDONLY);
+    int len = lseek(fd, 0, SEEK_END);
+    char *data = mmap(0, len, PROT_READ, MAP_PRIVATE, fd, 0);
+
+    char *program = data;
 
     DEBUGF("*** lexing ***\n");
     token_t *tokens = getTokens(program);
@@ -36,6 +42,8 @@ int main() {
     DEBUGF("*** ast: ***\n");
     printf(ast_str);
     DEBUGF("\n");
+
+    munmap(data, len);
 
     return 0;
 }

@@ -221,6 +221,11 @@ token_t *getTokens(char *input) {
                 token_tail = token_add_next(token_tail, TokenTypeAsterisk, "*");
                 break;
             case '/':
+                // skip comment
+                if (input[index + 1] == '/') {
+                    get_chars_until(input, &index, '\n');
+                    break;
+                }
                 token_tail = token_add_next(token_tail, TokenTypeForwardSlash, "/");
                 break;
             case '(':
