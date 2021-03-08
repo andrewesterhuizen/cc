@@ -9,7 +9,7 @@ unsigned int hash(unsigned char *key)
     unsigned int hash = 0;
 
     int i = 0;
-    int c;
+    int c = key[i];
 
     while (c)
     {
