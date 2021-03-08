@@ -201,7 +201,6 @@ parser_parse_declaration_statement(parser_t *parser, char *identifier, char *dat
     s->declaration.identifier = identifier;
 
     parser_next_token(parser);
-    parser_expect(parser, TokenTypeIntegerLiteral);
 
     ast_node_expression_t *e = parser_parse_expression(parser);
     s->declaration.value = e;
