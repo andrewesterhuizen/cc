@@ -51,6 +51,8 @@ char *token_name(unsigned int type) {
             return "TokenTypeEquals";
         case TokenTypeMinus:
             return "TokenTypeMinus";
+        case TokenTypePlus:
+            return "TokenTypePlus";
         case TokenTypeAsterisk:
             return "TokenTypeAsterisk";
         case TokenTypeForwardSlash:

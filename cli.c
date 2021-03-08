@@ -7,7 +7,7 @@
 #include "defines.h"
 
 int main() {
-    char *program = "int main() { return 1; };\n";
+    char *program = "int main() { int y = 1 + 2; return y; };\n";
 
     DEBUGF("*** lexing ***\n");
     token_t *tokens = getTokens(program);

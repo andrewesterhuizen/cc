@@ -16,6 +16,7 @@ enum {
     AstNodeIntegerLiteralExpression,
     AstNodeFunctionCallExpression,
     AstNodeTypeIdentifierExpression,
+    AstNodeBinaryExpression
 };
 
 enum {
@@ -32,12 +33,19 @@ struct function_call_expression {
     struct ast_node_expression *arguments;
 };
 
+struct binary_expression {
+    char *operator;
+    struct ast_node_expression *left;
+    struct ast_node_expression *right;
+};
+
 struct ast_node_expression {
     unsigned int type;
     union {
         struct function_call_expression function_call_expression;
         unsigned int value_int;
         char *identifier;
+        struct binary_expression binary_expression;
     };
     struct ast_node_expression *next;
 } typedef ast_node_expression_t;

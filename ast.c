@@ -43,6 +43,14 @@ char *expression_to_string(ast_node_expression_t *expression) {
             break;
         }
 
+        case AstNodeBinaryExpression: {
+            sprintf(out, "binary_expression {\n  operator: %s,\n  left: %s,\n  right: %s }",
+                    expression->binary_expression.operator,
+                    expression_to_string(expression->binary_expression.left),
+                    expression_to_string(expression->binary_expression.right));
+            break;
+        }
+
         default:
         EXIT_ERRORF("expression_to_string: no case defined for expression type %d\n", expression->type);
     }
@@ -242,6 +250,8 @@ char *ast_node_type_to_string(unsigned int type) {
             return "AstNodeFunctionCallExpression";
         case AstNodeTypeIdentifierExpression:
             return "AstNodeTypeIdentifierExpression";
+        case AstNodeBinaryExpression:
+            return "AstNodeBinaryExpression";
         default:
             return "Unknown";
     }

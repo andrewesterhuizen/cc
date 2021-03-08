@@ -120,7 +120,7 @@ token_t *getTokens(char *input) {
                 token_tail = token_add_next(token_tail, TokenTypeSemiColon, ";");
                 break;
             case ',':
-                token_tail = token_add_next(token_tail, TokenTypeComma, ";");
+                token_tail = token_add_next(token_tail, TokenTypeComma, ",");
                 break;
             case '=':
                 token_tail = token_add_next(token_tail, TokenTypeEquals, "=");

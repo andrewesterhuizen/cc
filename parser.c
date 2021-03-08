@@ -58,19 +58,56 @@ ast_node_expression_t *parser_parse_expression(parser_t *parser) {
         case TokenTypeIntegerLiteral: {
             ast_node_expression_t *e = new_ast_expression_node(AstNodeIntegerLiteralExpression);
             e->value_int = atoi(parser->current_token->value);
-            return e;
+
+            parser_next_token(parser);
+            if (parser->current_token->type == TokenTypeSemiColon) {
+                parser_prev_token(parser);
+                return e;
+            }
+
+            token_t *operator_token = parser->current_token;
+            parser_next_token(parser);
+
+            ast_node_expression_t *right = parser_parse_expression(parser);
+
+            ast_node_expression_t *binary_expression = new_ast_expression_node(AstNodeBinaryExpression);
+
+            binary_expression->binary_expression.operator = operator_token->value;
+            binary_expression->binary_expression.left = e;
+            binary_expression->binary_expression.right = right;
+
+            return binary_expression;
         }
         case TokenTypeIdentifier: {
             token_t *identifier_token = parser->current_token;
             parser_next_token(parser);
 
+            ast_node_expression_t *e = NULL;
+
             if (parser->current_token->type == TokenTypeLeftParen) {
-                return parser_parse_function_call_expression(parser, identifier_token);
+                e = parser_parse_function_call_expression(parser, identifier_token);
             } else {
-                ast_node_expression_t *e = new_ast_expression_node(AstNodeTypeIdentifierExpression);
+                e = new_ast_expression_node(AstNodeTypeIdentifierExpression);
                 e->identifier = identifier_token->value;
+            }
+
+            if (parser->current_token->type == TokenTypeSemiColon) {
+                parser_prev_token(parser);
                 return e;
             }
+
+            token_t *operator_token = parser->current_token;
+            parser_next_token(parser);
+
+            ast_node_expression_t *right = parser_parse_expression(parser);
+
+            ast_node_expression_t *binary_expression = new_ast_expression_node(AstNodeBinaryExpression);
+
+            binary_expression->binary_expression.operator = operator_token->value;
+            binary_expression->binary_expression.left = e;
+            binary_expression->binary_expression.right = right;
+
+            return binary_expression;
         }
         default:
         EXIT_ERRORF("parser_parse_expression: unexpected token: %s\n", token_to_string(parser->current_token));
@@ -148,15 +185,19 @@ ast_node_statement_t *parser_parse_function_declaration_statement(parser_t *pars
     return s;
 }
 
-ast_node_statement_t *parser_parse_declaration_statement(parser_t *parser, char *identifier, char *data_type_name) {
-    DEBUGF("parser_parse_declaration_statement: identifier = %s, data_type = %s \n",
+ast_node_statement_t *
+parser_parse_declaration_statement(parser_t *parser, char *identifier, char *data_type_name, int is_pointer) {
+    unsigned int data_type = get_data_type(data_type_name);
+
+    DEBUGF("parser_parse_declaration_statement: identifier = %s, data_type = %s, is_pointer = %d \n",
            identifier,
-           get_data_type(data_type_name))
+           data_type_name,
+           is_pointer)
 
     ast_node_statement_t *s = new_ast_statement_node(AstNodeTypeDeclarationStatement);
 
-    s->declaration.data_type.type = get_data_type(data_type_name);
-    s->declaration.data_type.is_pointer = 0;
+    s->declaration.data_type.type = data_type;
+    s->declaration.data_type.is_pointer = is_pointer;
     s->declaration.identifier = identifier;
 
     parser_next_token(parser);
@@ -164,9 +205,6 @@ ast_node_statement_t *parser_parse_declaration_statement(parser_t *parser, char 
 
     ast_node_expression_t *e = parser_parse_expression(parser);
     s->declaration.value = e;
-
-    parser_next_token(parser);
-    parser_expect(parser, TokenTypeSemiColon);
 
     return s;
 }
@@ -203,17 +241,16 @@ ast_node_statement_t *parser_parse_statements(parser_t *parser) {
                 parser_next_token(parser);
 
                 // TODO: this should be switch instead of if statements
-                // assignment
                 if (parser->current_token->type == TokenTypeEquals) {
+                    // assignment
                     ast_node_statement_t *s = parser_parse_declaration_statement(parser,
                                                                                  identifier_token->value,
-                                                                                 data_type_token->value);
+                                                                                 data_type_token->value,
+                                                                                 is_pointer);
                     current_statement->next = s;
                     current_statement = s;
-                }
-
-                // function declaration
-                if (parser->current_token->type == TokenTypeLeftParen) {
+                } else if (parser->current_token->type == TokenTypeLeftParen) {
+                    // function declaration
                     ast_node_statement_t *s = parser_parse_function_declaration_statement(parser,
                                                                                           identifier_token->value,
                                                                                           data_type_token->value,
