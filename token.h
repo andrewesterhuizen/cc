@@ -21,12 +21,15 @@ enum {
     TokenTypeLeftBrace,
     TokenTypeRightBrace,
     TokenTypeAngleBracketLeft,
-    TokenTypeAngleBracketRight
+    TokenTypeAngleBracketRight,
+    TokenTypePreprocessorDefine,
+    TokenTypePreprocessorInclude,
 };
 
 typedef struct token {
     unsigned int type;
     char *value;
+    char *extra_value;
     struct token *prev;
     struct token *next;
 } token_t;

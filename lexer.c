@@ -92,6 +92,75 @@ token_t *get_string_token(char *input, int *index) {
     return new_token(TokenTypeIdentifier, s);
 }
 
+void skip_whitespace(char *input, int *index) {
+    while (input[*index] != '\0' && input[*index] == ' ') {
+        (*index)++;
+    }
+
+    return;
+}
+
+char *get_chars_until(char *input, int *index, char c) {
+    string_builder_t *sb = string_builder_new();
+
+    while (input[*index] != '\0' && input[*index] != c) {
+        string_builder_append_char(sb, input[*index]);
+        (*index)++;
+    }
+
+    char *str = string_builder_get_string_copy(sb);
+    string_builder_destroy(sb);
+
+    return str;
+}
+
+token_t *get_preproccesor_directive(char *input, int *index) {
+    string_builder_t *sb = string_builder_new();
+
+    int i = *index;
+
+    // get directive
+    while (input[i] != '\0' && input[i] != ' ') {
+        string_builder_append_char(sb, input[i]);
+        i++;
+    }
+
+    char *directive = string_builder_get_string_copy(sb);
+
+    // skip whitespace
+    while (input[i] != '\0' && input[i] == ' ') {
+        i++;
+    }
+
+    string_builder_reset(sb);
+
+    // get name
+    while (input[i] != '\0' && input[i] == '<' || input[i] == '>' || input[i] == '.' || isalnum(input[i])) {
+        string_builder_append_char(sb, input[i]);
+        i++;
+    }
+
+    *index = i;
+
+    char *name = string_builder_get_string_copy(sb);
+    string_builder_destroy(sb);
+
+    if (strcmp("include", directive) == 0) {
+        token_t *t = new_token(TokenTypePreprocessorInclude, name);
+        return t;
+    }
+
+    if (strcmp("define", directive) == 0) {
+        skip_whitespace(input, index);
+        char *value = get_chars_until(input, index, '\n');
+        token_t *t = new_token(TokenTypePreprocessorDefine, name);
+        t->extra_value = value;
+        return t;
+    }
+
+    EXIT_ERRORF("unexpected preprocessor directive: %s\n", directive);
+}
+
 token_t *getTokens(char *input) {
     token_t *token_head = new_token(TokenTypeStart, "");
     token_t *token_tail = token_head;
@@ -116,6 +185,12 @@ token_t *getTokens(char *input) {
         }
 
         switch (c) {
+            // preprocessor directive
+            case '#':
+                index++;
+                token_tail->next = get_preproccesor_directive(input, &index);
+                token_tail = token_tail->next;
+                break;
             case ';':
                 token_tail = token_add_next(token_tail, TokenTypeSemiColon, ";");
                 break;
@@ -160,7 +235,7 @@ token_t *getTokens(char *input) {
                 // skip
                 break;
             default:
-                EXIT_ERRORF("lexer: unknown char = \"%c\", code = (%d)\n", c, c)
+            EXIT_ERRORF("lexer: unknown char = \"%c\", code = (%d)\n", c, c)
         }
 
         index++;

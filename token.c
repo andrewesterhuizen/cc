@@ -7,6 +7,7 @@ token_t *new_token(unsigned int type, char *value) {
     token_t *token = malloc(sizeof(token_t));
     token->type = type;
     token->value = value;
+    token->extra_value = NULL;
     token->prev = NULL;
     token->next = NULL;
     return token;
@@ -71,6 +72,11 @@ char *token_name(unsigned int type) {
             return "TokenTypeAngleBracketLeft";
         case TokenTypeAngleBracketRight:
             return "TokenTypeAngleBracketRight";
+        case TokenTypePreprocessorInclude:
+            return "TokenTypePreprocessorInclude";
+        case TokenTypePreprocessorDefine:
+            return "TokenTypePreprocessorDefine";
+
         default:
             return "Unknown";
     }
@@ -78,6 +84,16 @@ char *token_name(unsigned int type) {
 
 char *token_to_string(token_t *token) {
     char *s = malloc(sizeof(char) * 120);
+
+    if (token->extra_value != NULL) {
+        sprintf(s,
+                "{ type: %s, value: \"%s\", extra_value: \"%s\" }",
+                token_name(token->type),
+                token->value,
+                token->extra_value);
+        return s;
+    }
+
     sprintf(s, "{ type: %s, value: \"%s\" }", token_name(token->type), token->value);
     return s;
 }

@@ -5,15 +5,30 @@
 #include "ast.h"
 #include "parser.h"
 #include "defines.h"
+#include "preprocessor.h"
+#include "hash_table.h"
 
 int main() {
-    char *program = "int main() { int y = z; return y; };\n";
+    char *program = "#define x 1\n"
+                    "y = x;\n";
+//    char *program = "#include <stdio.h>\n";
+//                    "\n"
+//                    "int main() {\n"
+//                    "   printf(\"hi\");\n"
+//                    "   return 0;\n"
+//                    "}";
 
     DEBUGF("*** lexing ***\n");
     token_t *tokens = getTokens(program);
     DEBUGF("\n");
 
-    DEBUGF("*** tokens: ***\n");
+    DEBUGF("*** tokens before preprocessor: ***\n");
+    print_tokens(tokens);
+    DEBUGF("\n");
+
+    tokens = preprocessor_process(tokens);
+
+    DEBUGF("*** tokens after preprocessor: ***\n");
     print_tokens(tokens);
     DEBUGF("\n");
 
