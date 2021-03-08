@@ -154,15 +154,16 @@ char *ast_to_string(ast_node_t *node) {
     DEBUGF("print_ast: type = %s\n", ast_node_type_to_string(node->type));
 
     string_builder_t *sb = string_builder_new();
-    int indent = 0;
 
     switch (node->type) {
         case AstNodeTypeProgram: {
+            string_builder_append(sb, "program {\n statements: [\n");
             ast_node_statement_t *s = node->statements;
             while (s != NULL) {
                 string_builder_append(sb, statement_to_string(s));
                 s = s->next;
             }
+            string_builder_append(sb, "\n]}\n");
             break;
             default:
             EXIT_ERRORF("print_ast: no case defined for node type %d\n", node->type);
