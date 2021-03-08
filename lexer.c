@@ -8,11 +8,12 @@
 #include "string_builder.h"
 #include "defines.h"
 
-const int len_keywords = 3;
+const int len_keywords = 4;
 char *keywords[len_keywords] = {
         "if",
         "for",
         "while",
+        "return"
 };
 
 const int len_data_types = 1;

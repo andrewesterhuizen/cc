@@ -121,6 +121,11 @@ char *statement_to_string(ast_node_statement_t *s) {
             break;
         }
 
+        case AstNodeTypeReturnStatement: {
+            sprintf(out, "return_statement {\n  expression: %s\n}", expression_to_string(s->expression));
+            break;
+        }
+
         default:
         EXIT_ERRORF("statement_to_string: no case defined for statement type %d\n", s->type);
     }
@@ -229,6 +234,8 @@ char *ast_node_type_to_string(unsigned int type) {
             return "AstNodeTypeDeclarationStatement";
         case AstNodeTypeFunctionDeclarationStatement:
             return "AstNodeTypeFunctionDeclarationStatement";
+        case AstNodeTypeReturnStatement:
+            return "AstNodeTypeReturnStatement";
         case AstNodeIntegerLiteralExpression:
             return "AstNodeIntegerLiteralExpression";
         case AstNodeFunctionCallExpression:

@@ -6,12 +6,8 @@
 #include "parser.h"
 #include "defines.h"
 
-// TODO:
-// pointers
-// function calls
-
 int main() {
-    char *program = "int* main(int *x) { test(x, 2); };\n";
+    char *program = "int main() { return 1; };\n";
 
     DEBUGF("*** lexing ***\n");
     token_t *tokens = getTokens(program);

@@ -12,6 +12,7 @@ enum {
     AstNodeTypeExpressionStatement,
     AstNodeTypeDeclarationStatement,
     AstNodeTypeFunctionDeclarationStatement,
+    AstNodeTypeReturnStatement,
     AstNodeIntegerLiteralExpression,
     AstNodeFunctionCallExpression,
     AstNodeTypeIdentifierExpression,

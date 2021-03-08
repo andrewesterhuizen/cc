@@ -242,6 +242,25 @@ ast_node_statement_t *parser_parse_statements(parser_t *parser) {
                 break;
             }
 
+            case TokenTypeKeyword: {
+                if (strcmp(parser->current_token->value, "return") == 0) {
+                    parser_next_token(parser);
+                    ast_node_expression_t *expression = parser_parse_expression(parser);
+
+                    parser_next_token(parser);
+                    parser_expect(parser, TokenTypeSemiColon);
+
+                    ast_node_statement_t *return_statement = new_ast_statement_node(AstNodeTypeReturnStatement);
+                    return_statement->expression = expression;
+
+                    current_statement->next = return_statement;
+                    current_statement = return_statement;
+                } else {
+                    EXIT_ERRORF("parser_parse_statements: unexpected keyword: %s\n", parser->current_token->value);
+                }
+                break;
+            }
+
             default:
             EXIT_ERRORF("parser_parse_statements: unexpected token: %s\n", token_to_string(parser->current_token));
         }
