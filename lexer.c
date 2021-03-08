@@ -16,10 +16,11 @@ char *keywords[len_keywords] = {
         "return"
 };
 
-const int len_data_types = 2;
+const int len_data_types = 3;
 char *data_types[len_data_types] = {
         "int",
-        "char"
+        "char",
+        "void"
 };
 
 

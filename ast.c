@@ -208,24 +208,31 @@ unsigned int get_data_type(char *type_name) {
         return DataTypeChar;
     }
 
+    if (strcmp(type_name, "void") == 0) {
+        return DataTypeVoid;
+    }
+
     EXIT_ERRORF("parser: get_data_type: no case defined for data type \"%s\"\n", type_name);
 }
 
-char *data_type_to_string(data_type_t type) {
+char *data_type_to_string(data_type_t data_type) {
     string_builder_t *sb = string_builder_new();
 
-    switch (type.type) {
+    switch (data_type.type) {
         case DataTypeInt:
             string_builder_append(sb, "int");
             break;
         case DataTypeChar:
             string_builder_append(sb, "char");
             break;
+        case DataTypeVoid:
+            string_builder_append(sb, "void");
+            break;
         default:
-            string_builder_append(sb, "unknown");
+        EXIT_ERRORF("ast: data_type_to_string: no case defined for data type %d\n", data_type.type)
     }
 
-    if (type.is_pointer) {
+    if (data_type.is_pointer) {
         string_builder_append(sb, "*");
     }
 

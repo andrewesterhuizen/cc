@@ -22,7 +22,8 @@ enum {
 
 enum {
     DataTypeInt = 1,
-    DataTypeChar = 2
+    DataTypeChar,
+    DataTypeVoid
 };
 
 struct data_type {
