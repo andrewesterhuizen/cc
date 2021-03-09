@@ -2,6 +2,7 @@
 #define AST_H
 
 #include "token.h"
+#include "string_builder.h"
 
 enum {
     AstNodeTypeProgram,
@@ -31,6 +32,7 @@ struct data_type {
     int is_pointer;
 } typedef data_type_t;
 
+// expressions
 struct function_call_expression {
     char *identifier;
     struct ast_node_expression *arguments;
@@ -47,13 +49,14 @@ struct ast_node_expression {
     union {
         struct function_call_expression function_call_expression;
         unsigned int value_int;
-        char* value_string;
-        char *identifier;
+        char *value_string;
+        char *identifier; // TODO: change this to just use value_string
         struct binary_expression binary_expression;
     };
     struct ast_node_expression *next;
 } typedef ast_node_expression_t;
 
+// statements
 struct declaration {
     data_type_t data_type;
     char *identifier;
@@ -66,7 +69,6 @@ struct function_declaration_parameter {
     struct function_declaration_parameter *next;
 } typedef function_declaration_parameter_t;
 
-function_declaration_parameter_t *new_function_declaration_parameter(data_type_t data_type, char *identifier);
 
 struct function_declaration {
     char *identifier;
@@ -78,7 +80,6 @@ struct function_declaration {
 struct block {
     struct ast_node_statement *statements;
 };
-
 
 struct ast_node_statement {
     unsigned int type;
@@ -98,19 +99,11 @@ struct ast_node {
     struct ast_node_statement *statements;
 } typedef ast_node_t;
 
-void print_statement(ast_node_statement_t *s);
-
-char *ast_to_string(ast_node_t *node);
-
-char *data_type_to_string(data_type_t);
-
-char *ast_node_type_to_string(unsigned int type);
-
-char *function_declaration_parameter_to_string(function_declaration_parameter_t *declaration);
+ast_node_statement_t *new_ast_statement_node(unsigned int type);
 
 ast_node_expression_t *new_ast_expression_node(unsigned int type);
 
-ast_node_statement_t *new_ast_statement_node(unsigned int type);
+function_declaration_parameter_t *new_function_declaration_parameter(data_type_t data_type, char *identifier);
 
 unsigned int get_data_type(char *type_name);
 

@@ -9,6 +9,7 @@
 #include "parser.h"
 #include "defines.h"
 #include "preprocessor.h"
+#include "ast_to_string.h"
 
 int main() {
     int fd = open("/Users/andrewesterhuizen/dev/cc/test/hello.c", O_RDONLY);
@@ -40,7 +41,7 @@ int main() {
     DEBUGF("\n");
 
     DEBUGF("*** ast: ***\n");
-    printf(ast_str);
+    printf("%s", ast_str);
     DEBUGF("\n");
 
     munmap(data, len);
