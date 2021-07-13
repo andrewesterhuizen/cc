@@ -1,1 +1,1 @@
-WIP - leading contender for worlds worst C compiler
+A brave attempt at writing a C compiler in C
